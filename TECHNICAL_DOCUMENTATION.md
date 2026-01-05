@@ -186,7 +186,7 @@ Request → API Controller → Service/Model → Database
            │ Nhận diện thành công
            ↓
 ┌──────────────────────────────────┐
-│  Tạo record ChamCong            │
+│  Tạo record ChamCong             │
 │  - user_id                       │
 │  - thời gian                     │
 │  - ca làm việc                   │
@@ -194,8 +194,8 @@ Request → API Controller → Service/Model → Database
            │
            ↓
 ┌──────────────────────────────────┐
-│  Lưu vào Database               │
-│  - TrangThai = "Vào"/"Ra"       │
+│  Lưu vào Database                │
+│  - TrangThai = "Vào"/"Ra"        │
 └──────────────────────────────────┘
 ```
 
@@ -532,5 +532,6 @@ Giải pháp: Kiểm tra camera, ánh sáng, chất lượng ảnh
 **Document Version**: 1.0  
 **Last Updated**: 2025-01-05  
 **Author**: Development Team
+
 
 
