@@ -70,7 +70,7 @@ back-end/
 ├── recognize/             # Face recognition module
 │   ├── recognize_face.py  # Nhận diện khuôn mặt
 │   ├── register_face.py   # Đăng ký khuôn mặt
-│   └── mask_detector_model.h5  # Model detect mask
+│   
 │
 ├── Services/              # Business logic
 │   ├── face_services.py   # Face processing
@@ -532,3 +532,4 @@ Giải pháp: Kiểm tra camera, ánh sáng, chất lượng ảnh
 **Document Version**: 1.0  
 **Last Updated**: 2025-01-05  
 **Author**: Development Team
+
