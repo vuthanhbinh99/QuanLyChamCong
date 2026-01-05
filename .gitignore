@@ -1,0 +1,60 @@
+# Flutter
+front-end/build/
+front-end/.dart_tool/
+front-end/.flutter-plugins
+front-end/.flutter-plugins-dependencies
+front-end/pubspec.lock
+
+# Android
+front-end/android/build/
+front-end/android/.gradle/
+front-end/android/.kotlin/
+front-end/android/local.properties
+front-end/android/*.log
+front-end/android/*.hprof
+front-end/android/replay_*.log
+front-end/android/hs_err_pid*.log
+front-end/android/quanlychamcong_android.iml
+
+# iOS
+front-end/ios/Flutter/Flutter.podspec
+front-end/ios/Flutter/Flutter.framework
+front-end/ios/Flutter/Flutter.xcframework
+front-end/ios/Pods/
+
+# IDE
+front-end/.idea/
+front-end/.metadata
+front-end/quanlychamcong.iml
+.vscode/
+
+# Python
+back-end/__pycache__/
+back-end/**/__pycache__/
+back-end/*.pyc
+back-end/**/*.pyc
+back-end/.env
+back-end/.venv
+back-end/venv/
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Generated files
+front-end/lib/generated_plugin_registrant.dart
+
+# Sensitive files - Database & Config
+back-end/database.py
+back-end/.env
+back-end/config.py
+back-end/local_config.py
+back-end/*.db
+back-end/*.sqlite
+
+# Credentials
+back-end/credentials.json
+back-end/secrets.yaml
+
