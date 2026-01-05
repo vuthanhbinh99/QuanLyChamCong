@@ -180,8 +180,8 @@ Request → API Controller → Service/Model → Database
            ↓
 ┌──────────────────────────────────┐
 │  Camera mở                       │
-│  - Quét khuôn mặt               │
-│  - So sánh với database         │
+│  - Quét khuôn mặt                │
+│  - So sánh với database          │
 └──────────┬───────────────────────┘
            │ Nhận diện thành công
            ↓
@@ -204,23 +204,23 @@ Request → API Controller → Service/Model → Database
 ```
 ┌──────────────────────────────────────────────┐
 │              QUẢN TRỊ VIÊN (Admin)           │
-│  - Toàn quyền tất cả chức năng              │
-│  - Quản lý nhân viên, tài khoản, phòng ban │
+│  - Toàn quyền tất cả chức năng               │
+│  - Quản lý nhân viên, tài khoản, phòng ban   │
 └──────────────────────────────────────────────┘
                     ↓
 ┌──────────────────────────────────────────────┐
 │          QUẢN LÝ (Manager)                   │
-│  - Quản lý nhân viên phòng ban của mình     │
-│  - Duyệt đơn xin nghỉ                       │
-│  - Xem báo cáo phòng ban                    │
+│  - Quản lý nhân viên phòng ban của mình      │
+│  - Duyệt đơn xin nghỉ                        │
+│  - Xem báo cáo phòng ban                     │
 └──────────────────────────────────────────────┘
                     ↓
 ┌──────────────────────────────────────────────┐
 │       NHÂN VIÊN (Employee)                   │
-│  - Chấm công                                │
-│  - Xem lịch sử chấm công                   │
-│  - Gửi đơn xin nghỉ                        │
-│  - Quản lý khuôn mặt                       │
+│  - Chấm công                                 │
+│  - Xem lịch sử chấm công                     │
+│  - Gửi đơn xin nghỉ                          │
+│  - Quản lý khuôn mặt                         │
 └──────────────────────────────────────────────┘
 ```
 
@@ -532,4 +532,5 @@ Giải pháp: Kiểm tra camera, ánh sáng, chất lượng ảnh
 **Document Version**: 1.0  
 **Last Updated**: 2025-01-05  
 **Author**: Development Team
+
 
