@@ -88,15 +88,17 @@ def get_don_xin_nghi_by_user(user_id):
         result = []
         for don in ds_don:
             result.append({
-                "maDon": don.MaDon,
-                "userId": don.MaNV,
-                "loaiDon": don.LoaiDon,     
-                "lyDo": don.LyDo,
-                "ngayBatDau": safe_strftime(don.NgayBatDau),
-                "ngayKetThuc": safe_strftime(don.NgayKetThuc),
-                "trangThai": don.TrangThai,
-                "ghiChu": don.GhiChu,        
-                "ngayGui": safe_strftime(don.NgayGui)
+                "MaDon": don.MaDon,
+                "MaNV": don.MaNV,
+                "LoaiDon": don.LoaiDon,     
+                "LyDo": don.LyDo,
+                "NgayBatDau": safe_strftime(don.NgayBatDau),
+                "NgayKetThuc": safe_strftime(don.NgayKetThuc),
+                "TrangThai": don.TrangThai,
+                "GhiChu": don.GhiChu,
+                "MaQL": don.MaQL,
+                "NgayGui": safe_strftime(don.NgayGui),
+                "NgayDuyet": safe_strftime(don.NgayDuyet)
             })
         return jsonify(result), 200
     except Exception as e:

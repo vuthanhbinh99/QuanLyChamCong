@@ -11,6 +11,7 @@ import 'package:quanlychamcong/controllers/auth_controller.dart';
 import 'package:quanlychamcong/views/login_view.dart';
 import 'package:quanlychamcong/views/quanly/cham_cong_nhan_vien.dart';
 import 'package:quanlychamcong/views/user_guide_view.dart';
+import 'package:quanlychamcong/views/quanly/lich_su_cham_cong_quanly.dart';
 
 class HomeQuanLyView extends StatefulWidget {
   final String role;
@@ -46,6 +47,7 @@ class _HomeQuanLyViewState extends State<HomeQuanLyView>
     MenuItem(title: 'Danh sách nhân viên', icon: Icons.group, route: '/danh_sach_nhan_vien'),
     MenuItem(title: 'Xem báo cáo phòng', icon: Icons.bar_chart, route: '/xem_bao_cao_phong'),
     MenuItem(title: 'Chấm công nhân viên', icon: Icons.fingerprint, route: '/cham_cong_nhan_vien'),
+    MenuItem(title: 'Lịch sử chấm công', icon: Icons.history, route: '/lich_su_cham_cong'),
     MenuItem(title: 'Đăng ký gương mặt', icon: Icons.face, route: '/dang_ky_guong_mat'),
   ];
 
@@ -443,6 +445,22 @@ class _HomeQuanLyViewState extends State<HomeQuanLyView>
                     );
                   },
                 ),
+                _buildQuickActionIcon(
+                  context: context,
+                  icon: Icons.history,
+                  label: 'Lịch sử\nchấm công',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => LichSuChamCongQuanLyView(
+                          maQL: _maQL,
+                          hoTenQL: _hoTenQL,
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
 
@@ -625,6 +643,17 @@ class _HomeQuanLyViewState extends State<HomeQuanLyView>
           context,
           MaterialPageRoute(
             builder: (_) => ChamCongNhanVienView(maQL: _maQL),
+          ),
+        );
+        break;
+      case '/lich_su_cham_cong':
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => LichSuChamCongQuanLyView(
+              maQL: _maQL,
+              hoTenQL: _hoTenQL,
+            ),
           ),
         );
         break;
