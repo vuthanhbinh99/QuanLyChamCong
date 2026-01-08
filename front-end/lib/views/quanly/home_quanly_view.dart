@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:async';
 
 import 'package:quanlychamcong/services/api_service.dart';
 import 'package:quanlychamcong/views/dang_ky_guong_mat_view.dart'; 
@@ -27,15 +28,18 @@ class HomeQuanLyView extends StatefulWidget {
   State<HomeQuanLyView> createState() => _HomeQuanLyViewState();
 }
 
-class _HomeQuanLyViewState extends State<HomeQuanLyView> {
+class _HomeQuanLyViewState extends State<HomeQuanLyView>
+    with WidgetsBindingObserver {
   final ApiService apiService = ApiService();
   
-  List<Map<String, dynamic>> _chamCongList = [];
+  List<dynamic> _pendingDonXinList = [];
   bool _isLoading = false;
   int _pendingDonXinCount = 0;
   
   late String _maQL;
   late String _hoTenQL;
+  Timer? _autoRefreshTimer;
+  bool _isPageActive = true;
 
   final List<MenuItem> menuItems = const [
     MenuItem(title: 'Duyệt đơn xin', icon: Icons.assignment_turned_in, route: '/duyet_don_xin'),
@@ -48,48 +52,65 @@ class _HomeQuanLyViewState extends State<HomeQuanLyView> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     final authController = context.read<AuthController>();
     _maQL = widget.maQL ?? authController.currentUserId ?? 'QL001';
     _hoTenQL = widget.hoTenQL ?? 'Quản Lý';
     
-    _loadChamCongToday();
+    // Load tên quản lý từ API nếu chưa có
+    if (_hoTenQL == 'Quản Lý') {
+      _loadQuanLyInfo();
+    }
+    
     _loadPendingDonXin();
-    // Auto refresh mỗi 30 giây
-    Future.delayed(const Duration(seconds: 30), _autoRefresh);
+    // Auto refresh mỗi 30 giây để tránh lag khi dữ liệu nhiều
+    _autoRefreshTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (mounted && _isPageActive) {
+        _loadPendingDonXin();
+      }
+    });
   }
 
-  Future<void> _autoRefresh() async {
-    if (mounted) {
-      await _loadChamCongToday();
-      await _loadPendingDonXin();
-      Future.delayed(const Duration(seconds: 30), _autoRefresh);
-    }
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    _isPageActive = state == AppLifecycleState.resumed;
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _autoRefreshTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadPendingDonXin() async {
     try {
-      // TODO: Gọi API để lấy số lượng đơn chưa duyệt
-      // Tạm thời để 0
-      setState(() => _pendingDonXinCount = 0);
+      setState(() => _isLoading = true);
+      
+      final pendingRequests = await apiService.getPendingDonXinByQuanLy(_maQL);
+      
+      setState(() {
+        _pendingDonXinList = pendingRequests;
+        _pendingDonXinCount = pendingRequests.length;
+        _isLoading = false;
+      });
     } catch (e) {
       print('Error loading pending don xin: $e');
+      setState(() => _isLoading = false);
     }
   }
 
-  Future<void> _loadChamCongToday() async {
-    setState(() => _isLoading = true);
-
+  Future<void> _loadQuanLyInfo() async {
     try {
-      // Load pending don xin instead of attendance
-      // TODO: Create endpoint to get pending don xin by manager
-      // For now, we'll use mock data or fetch from donxin API
-      setState(() {
-        _chamCongList = []; // Will be populated from API
-      });
+      final quanLyInfo = await apiService.getQuanLyInfo(_maQL);
+      if (quanLyInfo != null && mounted) {
+        setState(() {
+          _hoTenQL = quanLyInfo['HoTenQL'] ?? 'Quản Lý';
+        });
+      }
     } catch (e) {
-      print('Error loading data: $e');
-    } finally {
-      setState(() => _isLoading = false);
+      print('Error loading quan ly info: $e');
     }
   }
 
@@ -130,14 +151,14 @@ class _HomeQuanLyViewState extends State<HomeQuanLyView> {
           ),
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: _loadChamCongToday,
+            onPressed: _loadPendingDonXin,
             tooltip: 'Làm mới',
           ),
         ],
       ),
       drawer: _buildDrawer(context),
       body: RefreshIndicator(
-        onRefresh: _loadChamCongToday,
+        onRefresh: _loadPendingDonXin,
         child: _buildBody(context),
       ),
     );
@@ -161,7 +182,7 @@ class _HomeQuanLyViewState extends State<HomeQuanLyView> {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    _hoTenQL,
+                    _hoTenQL.isEmpty ? 'Quản Lý' : _hoTenQL,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 18,
@@ -170,7 +191,7 @@ class _HomeQuanLyViewState extends State<HomeQuanLyView> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    _maQL,
+                    'Mã: $_maQL',
                     style: const TextStyle(color: Colors.white70, fontSize: 14),
                   ),
                 ],
@@ -221,24 +242,50 @@ class _HomeQuanLyViewState extends State<HomeQuanLyView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Welcome card
+            // Welcome card - hiển thị tên quản lý
             Card(
+              elevation: 2,
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Row(
                   children: [
-                    const Icon(Icons.manage_accounts, size: 40, color: Colors.green),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.green.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(50),
+                      ),
+                      padding: const EdgeInsets.all(12),
+                      child: const Icon(Icons.manage_accounts, size: 40, color: Colors.green),
+                    ),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Xin chào, $_hoTenQL!',
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            _hoTenQL,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green,
+                            ),
                           ),
                           const SizedBox(height: 4),
-                          Text('Mã QL: $_maQL', style: TextStyle(color: Colors.grey[600])),
+                          Text(
+                            'Mã: $_maQL',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Quản lý phòng ban',
+                            style: TextStyle(
+                              color: Colors.grey[500],
+                              fontSize: 12,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -251,50 +298,80 @@ class _HomeQuanLyViewState extends State<HomeQuanLyView> {
 
             // Notification card for pending requests
             if (_pendingDonXinCount > 0)
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.orange[50],
-                  border: Border.all(color: Colors.orange),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.notifications, color: Colors.orange[700], size: 28),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Có đơn chờ duyệt',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                          ),
-                          Text(
-                            'Bạn có $_pendingDonXinCount đơn xin chưa duyệt',
-                            style: TextStyle(color: Colors.grey[600]),
-                          ),
-                        ],
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => QuanLyDonXinTheoUserView(
+                        userId: _maQL,
+                        currentManagerId: _maQL,
                       ),
                     ),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => QuanLyDonXinTheoUserView(
-                              userId: _maQL,
-                              currentManagerId: _maQL,
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.orange[50]!, Colors.amber[50]!],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    border: Border.all(color: Colors.orange, width: 2),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.orange.withOpacity(0.2),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.orange[200],
+                          shape: BoxShape.circle,
+                        ),
+                        padding: const EdgeInsets.all(12),
+                        child: Icon(
+                          Icons.notifications_active,
+                          color: Colors.orange[900],
+                          size: 28,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Có đơn chờ duyệt',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                                color: Colors.orange,
+                              ),
                             ),
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange,
+                            Text(
+                              'Bạn có $_pendingDonXinCount đơn xin chưa duyệt',
+                              style: TextStyle(
+                                color: Colors.orange[700],
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      child: const Text('Duyệt'),
-                    ),
-                  ],
+                      Icon(
+                        Icons.arrow_forward_ios,
+                        color: Colors.orange[700],
+                        size: 20,
+                      ),
+                    ],
+                  ),
                 ),
               ),
 
@@ -384,7 +461,7 @@ class _HomeQuanLyViewState extends State<HomeQuanLyView> {
                   ),
                 ),
               )
-            else if (_chamCongList.isEmpty)
+            else if (_pendingDonXinList.isEmpty)
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
@@ -407,26 +484,54 @@ class _HomeQuanLyViewState extends State<HomeQuanLyView> {
   }
 
   Widget _buildPendingDonXinList() {
-    // TODO: Replace with actual pending don xin data from API
     return Container(
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey.withOpacity(0.3)),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: ListView.builder(
+      child: ListView.separated(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        itemCount: _chamCongList.length,
+        itemCount: _pendingDonXinList.length,
+        separatorBuilder: (context, index) =>
+            Divider(height: 1, color: Colors.grey.withOpacity(0.2)),
         itemBuilder: (context, index) {
-          final item = _chamCongList[index];
+          final don = _pendingDonXinList[index];
+          final maNV = don.userId ?? '-';
+          final hoTen = don.hoTen ?? 'N/A';
+          final loaiDon = don.loaiDon ?? 'Đơn xin';
+          final lyDo = don.lyDo ?? '';
+          final ngayBatDau = don.ngayBatDau ?? '-';
+          final ngayKetThuc = don.ngayKetThuc ?? '-';
+
           return ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             leading: CircleAvatar(
               backgroundColor: Colors.green.withOpacity(0.2),
               child: const Icon(Icons.assignment, color: Colors.green),
             ),
-            title: Text(item['ten_nv'] ?? '-'),
-            subtitle: Text('Mã NV: ${item['ma_nv'] ?? '-'}'),
-            trailing: ElevatedButton(
+            title: Text(
+              hoTen,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 4),
+                Text(
+                  '$loaiDon - $ngayBatDau đến $ngayKetThuc',
+                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                ),
+                if (lyDo.isNotEmpty)
+                  Text(
+                    'Lý do: $lyDo',
+                    style: TextStyle(color: Colors.grey[500], fontSize: 11),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+              ],
+            ),
+            trailing: ElevatedButton.icon(
               onPressed: () {
                 Navigator.push(
                   context,
@@ -440,8 +545,10 @@ class _HomeQuanLyViewState extends State<HomeQuanLyView> {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               ),
-              child: const Text('Duyệt', style: TextStyle(fontSize: 12)),
+              icon: const Icon(Icons.check, size: 16),
+              label: const Text('Duyệt', style: TextStyle(fontSize: 12)),
             ),
           );
         },

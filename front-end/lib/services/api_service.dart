@@ -313,6 +313,47 @@ Future<CaLam?> getCaLamById (String maCa) async {
   }
 }
 
+// Lấy thông tin quản lý theo mã
+Future<Map<String, dynamic>?> getQuanLyInfo(String maQL) async {
+  try {
+    final url = Uri.parse('$baseUrl/api/quanly/$maQL');
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      return null;
+    }
+  } catch (e) {
+    print('Error getting quan ly info: $e');
+    return null;
+  }
+}
+
+// Lấy danh sách đơn xin chờ duyệt của quản lý
+Future<List<DonXin>> getPendingDonXinByQuanLy(String maQL) async {
+  try {
+    final url = Uri.parse('$baseUrl/api/don-xin-nghi/quan-ly/$maQL');
+    final response = await http.get(url);
+
+    print('Response body: ${response.body}');
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      // Lọc chỉ những đơn có trạng thái "Chờ duyệt"
+      final pendingRequests = data
+          .map((json) => DonXin.fromJson(json))
+          .where((don) => don.trangThai?.toLowerCase() == 'chờ duyệt')
+          .toList();
+      return pendingRequests;
+    } else {
+      throw Exception('Lỗi tải danh sách đơn xin chờ duyệt');
+    }
+  } catch (e) {
+    print('Error getting pending don xin: $e');
+    return [];
+  }
+}
+
 Future<void> duyetTuChoiDon(String maDon, String trangThai, String ghiChu, String maQL) async {
   final url = Uri.parse('$baseUrl/api/don-xin-nghi/duyet-tu-choi/$maDon');
 

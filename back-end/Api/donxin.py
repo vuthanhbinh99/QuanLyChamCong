@@ -118,10 +118,17 @@ def get_don_xin_cho_quan_ly(ma_quan_ly):
         nhanvien_ids = session.query(NhanVien.MaNV).filter(NhanVien.MaPB == ma_pb).all()
         nhanvien_ids = [nv[0] for nv in nhanvien_ids]
 
-        # Lấy danh sách đơn xin nghỉ của các nhân viên này
-        don_xin_list = session.query(DonXin).filter(DonXin.MaNV.in_(nhanvien_ids)).all()
+        # Lấy danh sách đơn xin nghỉ của các nhân viên này kèm thông tin nhân viên
+        don_xin_list = session.query(DonXin, NhanVien.HoTenNV).join(
+            NhanVien, DonXin.MaNV == NhanVien.MaNV
+        ).filter(DonXin.MaNV.in_(nhanvien_ids)).all()
 
-        result = [don.to_dict() for don in don_xin_list]
+        result = []
+        for don, ho_ten in don_xin_list:
+            don_dict = don.to_dict()
+            don_dict['HoTen'] = ho_ten  # Thêm tên nhân viên
+            result.append(don_dict)
+        
         return jsonify(result)
     except Exception as e:
         import traceback

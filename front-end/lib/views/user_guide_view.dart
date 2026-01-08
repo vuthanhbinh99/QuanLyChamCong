@@ -118,19 +118,6 @@ class _UserGuideViewState extends State<UserGuideView> {
         ],
       ),
       GuideSection(
-        title: '➕ Thêm nhân viên mới',
-        steps: [
-          '⚠️ LƯU Ý: Tính năng này sẽ được chuyển cho Quản trị viên trong phiên bản tới',
-          '1. Từ menu, chọn "Thêm nhân viên"',
-          '2. Nhập thông tin: Họ tên, email, số điện thoại',
-          '3. Chọn phòng ban: Phải là phòng ban của bạn',
-          '4. Nhập ngày bắt đầu làm việc',
-          '5. Đặt mật khẩu ban đầu',
-          '6. Nhấn "LƯU" để tạo tài khoản',
-          'Nhân viên sẽ nhận được username = mã nhân viên',
-        ],
-      ),
-      GuideSection(
         title: '✅ Duyệt đơn xin nghỉ',
         steps: [
           '1. Từ menu, chọn "Duyệt đơn xin"',

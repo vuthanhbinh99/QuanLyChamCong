@@ -6,6 +6,7 @@ class DonXin {
   final String ngayBatDau;
   final String ngayKetThuc;
   final String trangThai;
+  final String? hoTen; // Tên nhân viên
   final String? maQL;
   final String? ngayGui;
   final String? ngayDuyet;
@@ -19,6 +20,7 @@ class DonXin {
     required this.ngayBatDau,
     required this.ngayKetThuc,
     required this.trangThai,
+    this.hoTen,
     this.maQL,
     this.ngayGui,
     this.ngayDuyet,
@@ -33,6 +35,7 @@ factory DonXin.fromJson(Map<String, dynamic> json) {
     ngayBatDau: json['NgayBatDau'] ?? '',
     ngayKetThuc: json['NgayKetThuc'] ?? '',
     trangThai: json['TrangThai'] ?? '',
+    hoTen: json['HoTen'],
     maQL: json['MaQL'],
     ngayGui: json['NgayGui'],
     ngayDuyet: json['NgayDuyet'],

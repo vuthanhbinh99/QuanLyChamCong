@@ -7,6 +7,29 @@ from Api.generate_id import get_new_employee_id, get_new_account_id
 
 quanly_bp = Blueprint('quanly', __name__)
 
+@quanly_bp.route('/quanly/<string:ma_ql>', methods=['GET'])
+def get_quanly_by_id(ma_ql):
+    session = SessionLocal()
+    try:
+        quanly = session.query(QuanLy).filter(QuanLy.MaQL == ma_ql).first()
+        if not quanly:
+            return jsonify({"error": "Không tìm thấy quản lý"}), 404
+        
+        return jsonify({
+            "MaQL": quanly.MaQL,
+            "HoTenQL": quanly.HoTenQL,
+            "MaPB": quanly.MaPB,
+            "SoDienThoai": quanly.SoDienThoai,
+            "Email": quanly.Email,
+            "GioiTinh": quanly.GioiTinh,
+            "TrangThai": quanly.TrangThai,
+            "NgayBatDauLam": quanly.NgayBatDauLam.isoformat() if quanly.NgayBatDauLam else None
+        }), 200
+    except Exception as e:
+        return jsonify({"error": f"Lỗi hệ thống: {str(e)}"}), 500
+    finally:
+        session.close()
+
 @quanly_bp.route('/quanly/nhanvien/phong/<string:ma_ql>', methods=['GET'])
 def get_nhanvien_by_quanly(ma_ql):
     session = SessionLocal()
